@@ -21,7 +21,7 @@ from birdnetlib.utils import read_audio_segments
 from pprint import pprint
 
 # TODO: Update these values on every new model release.
-MODEL_VERSION = "2.4"  # This is the default model that is installed with the library.
+MODEL_VERSION = "2.4-Gio"  # This is the default model that is installed with the library.
 MODEL_RELEASE_DATE = datetime(year=2023, month=6, day=1)
 MODEL_PATH = os.path.join(
     os.path.dirname(__file__),
@@ -31,7 +31,7 @@ LABEL_PATH = os.path.join(
     os.path.dirname(__file__), "models/analyzer/BirdNET_GLOBAL_6K_V2.4_Labels.txt"
 )
 
-
+APPLY_SIGMOID = False # Gio edit
 LOCATION_FILTER_THRESHOLD = 0.03
 
 
@@ -274,8 +274,7 @@ class Analyzer:
         prediction = self.interpreter.get_tensor(self.output_layer_index)
 
         # Logits or sigmoid activations?
-        APPLY_SIGMOID = True
-        if APPLY_SIGMOID:
+        if APPLY_SIGMOID: # Gio edit
             SIGMOID_SENSITIVITY = 1.0
             prediction = self.flat_sigmoid(
                 np.array(prediction), sensitivity=-SIGMOID_SENSITIVITY
@@ -350,7 +349,8 @@ class Analyzer:
             )
 
             # Filter by recording.minimum_confidence so not to needlessly store full 8K array for each chunk.
-            p_sorted = [i for i in p_sorted if i[1] >= recording.minimum_confidence]
+            if APPLY_SIGMOID: # Gio edit
+                p_sorted = [i for i in p_sorted if i[1] >= recording.minimum_confidence]
 
             # Store results
             results[str(start) + "-" + str(end)] = p_sorted
@@ -403,7 +403,7 @@ class Analyzer:
         if os.path.isfile(self.custom_species_list_path):
             with open(self.custom_species_list_path, "r") as csfile:
                 for line in csfile.readlines():
-                    print(line)
+                    # print(line)
                     species_list.append(line.replace("\r", "").replace("\n", ""))
 
         self.custom_species_list = species_list
@@ -442,8 +442,7 @@ class Analyzer:
         prediction = self.custom_interpreter.get_tensor(self.custom_output_layer_index)
 
         # Logits or sigmoid activations?
-        APPLY_SIGMOID = True
-        if APPLY_SIGMOID:
+        if APPLY_SIGMOID: # Gio edit
             SIGMOID_SENSITIVITY = 1.0
             prediction = self.flat_sigmoid(
                 np.array(prediction), sensitivity=-SIGMOID_SENSITIVITY

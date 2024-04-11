@@ -14,6 +14,7 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 from collections import namedtuple
 from birdnetlib.analyzer import LargeRecordingAnalyzer
+import birdnetlib.analyzer # Gio edit
 
 SAMPLE_RATE = 48000
 
@@ -81,14 +82,14 @@ class RecordingBase:
         allow_list = self.analyzer.custom_species_list
         for d in self.detection_list:
             if self.return_all_detections:
-                if d.confidence > self.minimum_confidence:
+                if ((birdnetlib.analyzer.APPLY_SIGMOID) and (d.confidence > self.minimum_confidence)) or (not birdnetlib.analyzer.APPLY_SIGMOID): # Gio edit
                     detection = self.return_detection_dict(d)
                     detection["is_predicted_for_location_and_date"] = (
                         f"{d.scientific_name}_{d.common_name}" in allow_list
                     )
                     qualified_detections.append(detection)
             else:
-                if d.confidence > self.minimum_confidence and (
+                if (((birdnetlib.analyzer.APPLY_SIGMOID) and (d.confidence > self.minimum_confidence)) or (not birdnetlib.analyzer.APPLY_SIGMOID)) and ( # Gio edit
                     f"{d.scientific_name}_{d.common_name}" in allow_list
                     or len(allow_list) == 0
                 ):
